@@ -4,37 +4,49 @@ import { client } from "@/sanity/lib/client";
 import { urlForImage } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
 import { Metadata } from "next";
+import { cn } from "@/lib/utils";
+import { ChevronRight } from "lucide-react";
+import Breadcrumbs from "@/components/BreadCrumbs";
 
-// Define the components for PortableText with improved styling
+interface BreadcrumbItem {
+  label: string;
+  href: string;
+}
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  { label: "Home", href: "/" },
+  { label: "Study Abroad", href: "/study-abroad" },
+];
+
 const portableTextComponents: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
-      <p className="text-gray-700 text-base leading-relaxed mb-6 font-normal tracking-normal">
+      <p className="text-lg leading-relaxed text-gray-700 mb-6 font-normal tracking-normal">
         {children}
       </p>
     ),
     h1: ({ children }) => (
-      <h1 className="text-gray-900 text-4xl sm:text-5xl font-bold mb-8 mt-12 leading-tight tracking-tight">
+      <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-8 mt-12 leading-tight tracking-tight">
         {children}
       </h1>
     ),
     h2: ({ children }) => (
-      <h2 className="text-gray-900 text-3xl sm:text-4xl font-semibold mb-6 mt-10 leading-tight tracking-tight">
+      <h2 className="text-3xl sm:text-4xl font-semibold text-gray-900 mb-6 mt-10 leading-tight tracking-tight">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="text-gray-800 text-2xl sm:text-3xl font-semibold mb-4 mt-8 leading-snug tracking-normal">
+      <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4 mt-8 leading-snug tracking-normal">
         {children}
       </h3>
     ),
     h4: ({ children }) => (
-      <h4 className="text-gray-800 text-xl sm:text-2xl font-medium mb-4 mt-6 leading-snug tracking-normal">
+      <h4 className="text-xl sm:text-2xl font-medium text-gray-800 mb-4 mt-6 leading-snug tracking-normal">
         {children}
       </h4>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-gray-200 pl-4 py-2 mb-6 italic text-gray-600">
+      <blockquote className="border-l-4 border-gray-300 pl-4 py-2 italic text-gray-600 mb-6">
         {children}
       </blockquote>
     ),
@@ -172,6 +184,8 @@ const portableTextComponents: PortableTextComponents = {
     },
   },
 };
+
+// Fetch section data
 async function getSectionData(slug: string, country: string, section: string) {
   try {
     const data = await client.fetch(
@@ -229,6 +243,7 @@ async function getSectionData(slug: string, country: string, section: string) {
   }
 }
 
+// Metadata generation
 export async function generateMetadata({
   params,
 }: {
@@ -247,13 +262,13 @@ export async function generateMetadata({
   }
 
   return {
-    title:
-      sectionData.heroTitle ||
-      `${sectionData.title} | Study in ${sectionData.parentTitle} from ${sectionData.countryName}`,
-    description: `Information about ${sectionData.title} for studying in ${sectionData.parentTitle} from ${sectionData.countryName}`,
+    title: sectionData.heroTitle || "Section Page",
+    description:
+      sectionData.contentBody[0]?.children[0]?.text || "Section page",
   };
 }
 
+// Main Section Page Component
 export default async function SectionPage({
   params,
 }: {
@@ -264,6 +279,16 @@ export default async function SectionPage({
     params.country,
     params.section
   );
+
+  if (!sectionData) {
+    return (
+      <div className="container py-12">
+        <h1 className="text-2xl font-semibold text-red-600">
+          Section not found
+        </h1>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f9fa]">
@@ -287,63 +312,19 @@ export default async function SectionPage({
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <article className="prose prose-lg max-w-none">
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a1a] mb-6">
-            {sectionData.title} - Study in {sectionData.parentTitle} From{" "}
-            {sectionData.countryName}
-          </h2>
-
-          {sectionData.contentBody && (
-            <PortableText
-              value={sectionData.contentBody}
-              components={portableTextComponents}
-            />
-          )}
-        </article>
-
-        {/* Breadcrumbs */}
-        <nav className="mt-16" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li>
-              <Link href="/" className="text-red-600 hover:underline">
-                Home
-              </Link>
-            </li>
-            <li className="text-gray-500" aria-hidden="true">{`>`}</li>
-            <li>
-              <Link
-                href="/study-abroad"
-                className="text-red-600 hover:underline"
-              >
-                Study Abroad
-              </Link>
-            </li>
-            <li className="text-gray-500" aria-hidden="true">{`>`}</li>
-            <li>
-              <Link
-                href={`/study-abroad/${params.slug}`}
-                className="text-red-600 hover:underline"
-              >
-                Study in {sectionData.parentTitle}
-              </Link>
-            </li>
-            <li className="text-gray-500" aria-hidden="true">{`>`}</li>
-            <li>
-              <Link
-                href={`/study-abroad/${params.slug}/${params.country}`}
-                className="text-red-600 hover:underline"
-              >
-                From {sectionData.countryName}
-              </Link>
-            </li>
-            <li className="text-gray-500" aria-hidden="true">{`>`}</li>
-            <li className="text-gray-700" aria-current="page">
-              {sectionData.title}
-            </li>
-          </ol>
-        </nav>
+      <div className="prose max-w-full xl:px-24 px-5 pt-5 ">
+        <PortableText
+          value={sectionData.contentBody}
+          components={portableTextComponents}
+        />
       </div>
+
+      {/* breadcrumbs */}
+      <Breadcrumbs
+        slug={params.slug}
+        section={params.section}
+        country={params.country}
+      />
     </div>
   );
 }
