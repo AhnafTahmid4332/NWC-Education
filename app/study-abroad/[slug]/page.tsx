@@ -11,11 +11,6 @@ import {
   HelpCircle,
 } from "lucide-react";
 
-// type
-interface BreadcrumbItem {
-  label: string;
-  href: string;
-}
 
 const cardIcons = {
   Overview: GraduationCap,
@@ -190,33 +185,28 @@ export default async function CountryPage({
         </div>
 
         {/* Breadcrumbs */}
-        <div className="w-full py-10">
-          <div className="h-px w-full bg-[#FF0000]/20" />
-          <nav
-            aria-label="Breadcrumb"
-            className={cn("w-full bg-white px-2 sm:px-4 py-1 sm:py-2")}
-          >
-            <ol className="flex flex-wrap items-center gap-2 text-sm">
-              {breadcrumbItems.map((item, index) => (
-                <li key={item.href} className="flex items-center gap-2">
-                  <Link
-                    href={item.href}
-                    className="text-[#FF0000] hover:underline"
-                  >
-                    {item.label}
-                  </Link>
-                  {index < breadcrumbItems.length - 1 && (
-                    <ChevronRight
-                      className="h-4 w-4 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                  )}
-                </li>
-              ))}
-            </ol>
-          </nav>
-          <div className="h-px w-full bg-[#FF0000]/20" />
-        </div>
+        <nav className="mt-16" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-sm">
+            <li>
+              <Link href="/" className="text-red-600 hover:underline">
+                Home
+              </Link>
+            </li>
+            <li className="text-gray-500" aria-hidden="true">{`>`}</li>
+            <li>
+              <Link
+                href="/study-abroad"
+                className="text-red-600 hover:underline"
+              >
+                Study Abroad
+              </Link>
+            </li>
+            <li className="text-gray-500" aria-hidden="true">{`>`}</li>
+            <li className="text-gray-700" aria-current="page">
+              {countryData.title || "Country"}
+            </li>
+          </ol>
+        </nav>
       </div>
     </div>
   );
